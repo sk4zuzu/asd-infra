@@ -1,0 +1,11 @@
+[project]
+name = "asd-infra"
+version = "0.0.0"
+description = "OpenNebula Infra Ansible Playbooks"
+authors = [{name = "OpenNebula", email = "contact@opennebula.io"}]
+license = "Apache-2.0"
+requires-python = ">=3.9"
+dependencies = [
+  "ansible-core<2.17",
+  "netaddr",
+]
