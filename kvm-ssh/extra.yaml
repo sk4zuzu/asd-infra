@@ -1,0 +1,56 @@
+---
+vnets:
+  - template:
+      NAME: "vnet_1_<%= VNET_STEM %>"
+      VN_MAD: "bridge"
+      AR: [{ IP: "192.168.150.1", SIZE: 254, TYPE: IP4 }]
+  - template:
+      NAME: "vnet_2_<%= VNET_STEM %>"
+      VN_MAD: "bridge"
+      AR: [{ IP: "192.168.2.1", SIZE: 254, TYPE: IP4 }]
+  - template:
+      NAME: "vnet_3_<%= VNET_STEM %>"
+      VN_MAD: "bridge"
+      AR: [{ SIZE: 254, TYPE: ETHER }]
+  - template:
+      NAME: "vnet_4_<%= VNET_STEM %>"
+      VN_MAD: "bridge"
+      AR: [{ SIZE: 254, TYPE: ETHER }]
+  - template:
+      NAME: "vnet_5_<%= VNET_STEM %>"
+      VN_MAD: "bridge"
+      AR: [{ SIZE: 254, TYPE: ETHER }]
+
+vms:
+  - template:
+      NAME: "<%= VM_STEM %>-0.<%= DOMAIN %>"
+      MEMORY: 4096
+      VCPU: 8
+      DISK: { SIZE: 88064, CACHE: writethrough }
+      NIC:
+        - NETWORK: service
+        - NETWORK: "vnet_1_<%= VNET_STEM %>"
+  - template:
+      NAME: "<%= VM_STEM %>-1.<%= DOMAIN %>"
+      MEMORY: 4096
+      VCPU: 2
+      DISK: { SIZE: 65536, CACHE: writethrough }
+      NIC:
+        - NETWORK: service
+        - NETWORK: "vnet_1_<%= VNET_STEM %>"
+        - NETWORK: "vnet_2_<%= VNET_STEM %>"
+        - NETWORK: "vnet_3_<%= VNET_STEM %>"
+        - NETWORK: "vnet_4_<%= VNET_STEM %>"
+        - NETWORK: "vnet_5_<%= VNET_STEM %>"
+  - template:
+      NAME: "<%= VM_STEM %>-2.<%= DOMAIN %>"
+      MEMORY: 4096
+      VCPU: 2
+      DISK: { SIZE: 65536, CACHE: writethrough }
+      NIC:
+        - NETWORK: service
+        - NETWORK: "vnet_1_<%= VNET_STEM %>"
+        - NETWORK: "vnet_2_<%= VNET_STEM %>"
+        - NETWORK: "vnet_3_<%= VNET_STEM %>"
+        - NETWORK: "vnet_4_<%= VNET_STEM %>"
+        - NETWORK: "vnet_5_<%= VNET_STEM %>"
