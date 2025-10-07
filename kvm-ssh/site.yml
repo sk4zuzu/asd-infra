@@ -1,0 +1,18 @@
+---
+- ansible.builtin.import_playbook: opennebula.deploy.main
+
+- hosts: frontend
+  roles:
+    - role: opennebula.deploy.helper.certs
+      vars:
+        pki:
+          base: &base /var/tmp/fireedge-pki
+  post_tasks:
+    - ansible.builtin.find:
+        paths: *base
+        recurse: true
+
+- hosts: node
+  tasks:
+    - ansible.builtin.shell:
+        cmd: uname -a

@@ -28,7 +28,7 @@ vms:
       VCPU: 8
       DISK: { SIZE: 88064, CACHE: writethrough }
       NIC:
-        - NETWORK: service
+        - { NETWORK: service, VIRTIO_QUEUES: 8 }
         - NETWORK: "vnet_1_<%= VNET_STEM %>"
   - template:
       NAME: "<%= VM_STEM %>-1.<%= DOMAIN %>"
@@ -36,7 +36,7 @@ vms:
       VCPU: 2
       DISK: { SIZE: 65536, CACHE: writethrough }
       NIC:
-        - NETWORK: service
+        - { NETWORK: service, VIRTIO_QUEUES: 8 }
         - NETWORK: "vnet_1_<%= VNET_STEM %>"
         - NETWORK: "vnet_2_<%= VNET_STEM %>"
         - NETWORK: "vnet_3_<%= VNET_STEM %>"
@@ -48,7 +48,7 @@ vms:
       VCPU: 2
       DISK: { SIZE: 65536, CACHE: writethrough }
       NIC:
-        - NETWORK: service
+        - { NETWORK: service, VIRTIO_QUEUES: 8 }
         - NETWORK: "vnet_1_<%= VNET_STEM %>"
         - NETWORK: "vnet_2_<%= VNET_STEM %>"
         - NETWORK: "vnet_3_<%= VNET_STEM %>"

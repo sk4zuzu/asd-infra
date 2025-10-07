@@ -1,0 +1,22 @@
+---
+all:
+  vars:
+    ansible_user: root
+    ensure_keys_for: [root]
+    ensure_hostname: true
+    ensure_hosts: true
+    unattend_disable: true
+    update_pkg_cache: true
+    one_version: '7.0'
+    one_pass: asd
+    ds: {}
+    vn: {}
+
+frontend:
+  hosts:
+    "<%= vms[0]['inventory_hostname'] %>": { ansible_host: "<%= vms[0]['ansible_host'] %>" }
+
+node:
+  hosts:
+    "<%= vms[1]['inventory_hostname'] %>": { ansible_host: "<%= vms[1]['ansible_host'] %>" }
+    "<%= vms[2]['inventory_hostname'] %>": { ansible_host: "<%= vms[2]['ansible_host'] %>" }
