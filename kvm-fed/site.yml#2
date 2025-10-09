@@ -1,0 +1,7 @@
+# vim:ts=2:sw=2:et:syn=yaml:
+---
+- ansible.builtin.import_playbook: opennebula.deploy.main
+
+- hosts: [frontend, node]
+  tasks:
+    - debug: var=inventory_hostname

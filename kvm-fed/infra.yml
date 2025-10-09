@@ -1,0 +1,28 @@
+---
+vnets: []
+
+vms:
+  - template:
+      NAME: "<%= VM_STEM %>-0.<%= DOMAIN %>"
+      MEMORY: 3072
+      VCPU: 2
+      DISK: { SIZE: 16384, CACHE: writethrough }
+      NIC: { NETWORK: service, VIRTIO_QUEUES: 8 }
+  - template:
+      NAME: "<%= VM_STEM %>-1.<%= DOMAIN %>"
+      MEMORY: 4096
+      VCPU: 4
+      DISK: { SIZE: 32768, CACHE: writethrough }
+      NIC: { NETWORK: service, VIRTIO_QUEUES: 8 }
+  - template:
+      NAME: "<%= VM_STEM %>-2.<%= DOMAIN %>"
+      MEMORY: 3072
+      VCPU: 2
+      DISK: { SIZE: 16384, CACHE: writethrough }
+      NIC: { NETWORK: service, VIRTIO_QUEUES: 8 }
+  - template:
+      NAME: "<%= VM_STEM %>-3.<%= DOMAIN %>"
+      MEMORY: 4096
+      VCPU: 4
+      DISK: { SIZE: 32768, CACHE: writethrough }
+      NIC: { NETWORK: service, VIRTIO_QUEUES: 8 }
