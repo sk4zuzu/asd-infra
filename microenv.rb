@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'optparse'
 require 'erb'
 require 'json'
 require 'yaml'
-require 'opennebula'
 
 ONE_XMLRPC = 'http://10.2.11.40:2633/RPC2'
 ONE_AUTH   = 'oneadmin:asd'
@@ -47,11 +47,13 @@ def combine(*args, merge_lists: false)
     ab.first
 end
 
-def collect_paths(flavors)
+def resolve_paths(flavors)
     raise unless (dir = File.realpath(Dir.exist?(t = "./#{MICROENV}/") ? t : './')).end_with?(MICROENV)
     Dir["#{dir}/*"].each_with_object({}) do |path, acc|
         name, *tags = File.basename(path).split(%[\#])
         next unless %w[ ansible.cfg
+                        bootstrap.yml
+                        defaults.yml
                         infra.yml
                         inventory.yml
                         site.yml ].include?(name)
@@ -83,19 +85,17 @@ def collect_paths(flavors)
                 by_fedenv[fedenv].replace by_name
             end
         end
-        by_flavor
     end.then do |by_flavor|
-        # pick and merge together only flavors specified by the caller
-        by_fedenv = flavors.to_s.split(%[\+]).then do |ff|
-            ff = [''] if ff.empty?
+        # pick and merge together flavors specified by the caller
+        by_fedenv = ([''] + flavors.to_s.split(%[\+])).uniq.then do |ff|
             by_flavor.slice(*ff).then do |sliced|
                 raise unless (sliced.keys - ff).empty?
                 combine *sliced.values
             end
         end
-        # merge each specific fedenv with the default flavor
-        by_fedenv.keys.each do |fedenv|
-            m = combine (by_flavor.dig('', '') || {}),
+        # merge each specific fedenv with defaults
+        (by_fedenv.keys - ['']).each do |fedenv|
+            m = combine (by_fedenv.dig('') || {}),
                         by_fedenv[fedenv]
             by_fedenv[fedenv].replace m
         end
@@ -162,7 +162,7 @@ def ensure_templates(one, infra_yml)
         update = combine x.to_hash.dig('VMTEMPLATE', 'TEMPLATE'),
                          it.dig('template'),
                          { 'VMGROUP' => { 'VMGROUP_NAME' => VMGROUP_STEM, 'ROLE' => 'undefined' } },
-                         merge_lists: true
+                         :merge_lists => true
         rc = x.update to_one(update), 0
         pp(rc).then{exit(-1)} if OpenNebula.is_error?(rc)
     end
@@ -184,32 +184,31 @@ end
 def build_groups(inventory_yml)
     inventory_yml.each_with_object({}) do |(g, v), acc|
         acc[g] ||= {}
-        acc[g]['hosts']    = v['hosts'].keys unless v['hosts'].nil?
-        acc[g]['children'] = v['children']   unless v['children'].nil?
+        acc[g]['hosts']    = v['hosts'].keys    unless v['hosts'].nil?
+        acc[g]['children'] = v['children'].keys unless v['children'].nil?
     end.then do |groups|
-        all_hosts = groups.each_with_object([]) do |(_, v), acc|
-            next if v['hosts'].nil?
-            acc << v['hosts']
-        end.flatten.uniq
-        combine groups, {
-            'all' => {
-                'children' => ['ungrouped'] + groups.keys - ['all'],
-                'hosts'    => all_hosts
-            }
-        }
+        children = [
+            ['ungrouped'],
+            groups['all']['children'].to_a,
+            (groups.keys - ['all']).each_with_object([]) do |g, acc|
+                next unless (groups.select { |_, v| v['children'].to_a.include?(g) }).empty?
+                acc << g
+            end
+        ].flatten.uniq
+        combine groups, { 'all' => { 'children' => children } }
     end
 end
 
 def build_hostvars(inventory_yml)
     (recurse = proc { |node, vars, acc|
-        node&.dig('children').to_a.each do |g|
+        node&.dig('children').to_h.keys.each do |g|
             m = combine vars.to_h,
                         node&.dig('vars').to_h
             recurse.call inventory_yml[g], m, acc
         end
-        node&.dig('hosts').to_a.each do |h, v|
-            m = combine vars.to_h,
-                        (acc[h] ||= {}),
+        node&.dig('hosts').to_h.each do |h, v|
+            m = combine (acc[h] ||= {}),
+                        vars.to_h,
                         node&.dig('vars').to_h,
                         v.to_h
             acc[h].replace m
@@ -221,7 +220,7 @@ end
 def build_inventory(inventory_yml)
     groups = build_groups(inventory_yml)
 
-    inventory_yml['all']['children'] = groups['all']['children']
+    inventory_yml['all']['children'] = groups['all']['children'].to_h { |g| [g, {}] }
 
     hostvars = build_hostvars(inventory_yml)
 
@@ -285,7 +284,9 @@ if caller.empty?
         opt.on('--list')          { options[:list] = true }
     end.parse!
 
-    paths = collect_paths FLAVORS
+    paths = resolve_paths FLAVORS
+
+    require 'opennebula'
 
     one = OpenNebula::Client.new ONE_AUTH, ONE_XMLRPC, :sync => true
 

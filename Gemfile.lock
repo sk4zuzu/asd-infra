@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    diff-lcs (1.6.2)
     ipaddress (0.8.3)
     json (2.15.0)
     mini_portile2 (2.8.9)
@@ -17,6 +18,19 @@ GEM
     parse-cron (0.1.4)
     polyglot (0.3.5)
     racc (1.8.1)
+    rspec (3.13.1)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
+    rspec-core (3.13.5)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-support (3.13.6)
     treetop (1.6.14)
       polyglot (~> 0.3)
     webrick (1.9.1)
@@ -29,6 +43,7 @@ PLATFORMS
 
 DEPENDENCIES
   opennebula (~> 7.0)
+  rspec
 
 BUNDLED WITH
-   2.5.22
+   2.7.1
