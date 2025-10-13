@@ -2,6 +2,6 @@
 ---
 - ansible.builtin.import_playbook: opennebula.deploy.main
 
-- hosts: [frontend, node]
-  tasks:
-    - debug: var=inventory_hostname
+- hosts: frontend
+  roles:
+    - role: bootstrap-readiness

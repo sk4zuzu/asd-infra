@@ -1,0 +1,25 @@
+---
+- name: Install various dev tools
+  ansible.builtin.package:
+    name: "{{ _common + _specific[ansible_os_family] }}"
+  vars:
+    _common: ["gawk", "make"]
+    _specific:
+      Debian: []
+      RedHat: []
+  register: package
+  until: package is success
+  retries: 12
+  delay: 5
+
+- name: Render bootstrap.yml and defaults.yml for the current zone
+  ansible.builtin.template:
+    dest: "/var/lib/one/{{ item.key }}"
+    src: "{{ item.value }}"
+    owner: 9869
+    group: 9869
+    mode: "u=rw,go=r"
+  when:
+    - item.key is defined
+    - item.value is defined
+  loop: "{{ bootstrap_readiness_deployables | dict2items }}"

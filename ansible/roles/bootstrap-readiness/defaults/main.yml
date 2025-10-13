@@ -1,0 +1,8 @@
+---
+bootstrap_readiness_deployables:
+  Makefile: "{{ undef() }}"
+  prepare.sh: "{{ undef() }}"
+  postpare.sh: "{{ undef() }}"
+  bootstrap.yml: "{{ undef() }}"
+  defaults.yml: "{{ undef() }}"
+  tests.yml: "{{ undef() }}"

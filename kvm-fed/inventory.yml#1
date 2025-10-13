@@ -12,6 +12,7 @@ all:
     one_pass: asd
     ds: {}
     vn: {}
+    zone_name: OpenNebula
     force_master: true
 
 frontend:

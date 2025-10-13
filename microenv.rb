@@ -21,6 +21,12 @@ VM_STEM      = STEM
 VNET_STEM    = "private-#{STEM}"
 VMGROUP_STEM = STEM
 
+PLAIN_FILES      = %w[ansible.cfg]
+ERB_FILES        = %w[infra.yml inventory.yml]
+DEPLOYABLE_FILES = %w[Makefile prepare.sh postpare.sh bootstrap.yml defaults.yml tests.yml]
+JINJA2_FILES     = DEPLOYABLE_FILES + %w[site.yml]
+ALL_FILES        = PLAIN_FILES + ERB_FILES + JINJA2_FILES
+
 def combine(*args, merge_lists: false)
     recurse = proc { |a, b|
         case
@@ -51,12 +57,7 @@ def resolve_paths(flavors)
     raise unless (dir = File.realpath(Dir.exist?(t = "./#{MICROENV}/") ? t : './')).end_with?(MICROENV)
     Dir["#{dir}/*"].each_with_object({}) do |path, acc|
         name, *tags = File.basename(path).split(%[\#])
-        next unless %w[ ansible.cfg
-                        bootstrap.yml
-                        defaults.yml
-                        infra.yml
-                        inventory.yml
-                        site.yml ].include?(name)
+        next unless ALL_FILES.include?(name)
         acc[path] = {
             :name    => name,
             :flavors => (x = tags.reject { |tag| tag.to_s[/^\d+$/] }).empty? ? [''] : x,
@@ -255,7 +256,19 @@ def run_ansible(paths, fedenv)
             'FEDENV'         => fedenv,
             'ANSIBLE_CONFIG' => paths[fedenv]['ansible.cfg']
         }
-        raise unless system env, 'ansible-playbook', '-v', paths[fedenv]['site.yml']
+        args = [
+            'ansible-playbook', '-v', paths[fedenv]['site.yml']
+        ]
+        DEPLOYABLE_FILES.to_h do |name|
+            next if (path = paths[fedenv][name]).nil?
+            raise unless File.exist?(path)
+            [name, path]
+        end.then do |deployables|
+            next if deployables.empty?
+            args << '-e' << "bootstrap_readiness_deployables={{ #{JSON.dump(deployables)} }}"
+        end
+        puts [env, *args].join(%[\ ])
+        raise unless system env, *args
     end
 end
 

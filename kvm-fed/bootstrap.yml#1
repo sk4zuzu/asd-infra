@@ -1,0 +1,7 @@
+# vim:ts=2:sw=2:et:syn=yaml:
+---
+- action: update
+  type: user
+  id: 0
+  template:
+    ssh_public_key: "ssh-rsa pkey1"
